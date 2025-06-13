@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>3D Car</title>
+<style>
+body {
+    margin: 0;
+    background: black;
+    color: #0f0;
+    overflow: hidden;
+}
+</style>
+</head>
+<body>
+<h1 style="position:absolute;color:#0f0;margin:10px;z-index:1">
+    3D Car — ARROWS or TILT phone to move
+</h1>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.135.0/three.min.js"></script>
+
+<script>
+    // Basic scene setup
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 10;
+    camera.position.y = 5;
+    camera.rotation.x = -0.3;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.prepend(renderer.domElement);
+
+    // Light
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(0, 10, 10);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    // Ground
+    const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(500, 500),
+        new THREE.MeshLambertMaterial({ color: 0x003300 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    scene.add(ground);
+
+    // Car (simple box for now)
+    const car = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 0.5, 2),
+        new THREE.MeshLambertMaterial({ color: 0xff0000 })
+    );
+    car.position.y = 0.5;
+    scene.add(car);
+
+    // Controls
+    let moveLeft = false;
+    let moveRight = false;
+
+    window.addEventListener('keydown',(e)=>{
+        if (e.key==='ArrowLeft') moveLeft = true;
+        if (e.key==='ArrowRight') moveRight = true;
+    });
+
+    window.addEventListener('keyup',(e)=>{
+        if (e.key==='ArrowLeft') moveLeft = false;
+        if (e.key==='ArrowRight') moveRight = false;
+    });
+
+    // Touch / Tilt controls (optional, phone movement)
+
+    window.addEventListener('deviceorientation',(e)=>{
+        // If phone tilts left or right, move car
+        if (e.gamma > 10) moveRight = true;
+        else moveRight = false;
+
+        if (e.gamma < -10) moveLeft = true;
+        else moveLeft = false;
+    });
+
+    // Animate
+    function animate(){
+        if (moveLeft) car.position.x -= 0.05;
+        if (moveRight) car.position.x += 0.05;
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Handle resize
+    window.addEventListener('resize', ()=>{
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    })
+</script>
+
+</body>
+</html>
